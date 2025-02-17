@@ -1,0 +1,11 @@
+services:
+  fastapi-app:
+    build:
+      context: ../  # Navigate to `src/` since Dockerfile is inside `server/`
+      dockerfile: src/server/Dockerfile
+    container_name: fastapi-server
+    volumes:
+      - ../src:/app  # Mount the source code for live updates
+    ports:
+      - "8000:8000"  # Map host's port 8000 to container's port 8000
+    restart: unless-stopped
