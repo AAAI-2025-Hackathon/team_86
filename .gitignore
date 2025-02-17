@@ -1,0 +1,43 @@
+# General
+**/.env*
+.vscode
+tasks.md
+Dockerfile
+.venv
+
+# Server
+*.egg-info
+**/__pycache__
+**/.pytest_cache
+htmlcov
+src/server/logs
+
+# Client
+src/client/node_modules
+src/client/.pnp
+src/client/.pnp.*
+src/client/.yarn/*
+src/client/!.yarn/patches
+src/client/!.yarn/plugins
+src/client/!.yarn/releases
+src/client/!.yarn/versions
+## typescript
+src/client/*.tsbuildinfo
+src/client/next-env.d.ts
+## testing
+src/client/coverage
+## next.js
+src/client/.next/
+src/client/out/
+## production
+src/client/build
+## misc
+src/client/.DS_Store
+src/client/*.pem
+## debug
+src/client/npm-debug.log*
+src/client/yarn-debug.log*
+src/client/yarn-error.log*
+src/client/.pnpm-debug.log*
+# vercel
+src/client/.vercel
