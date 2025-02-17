@@ -1,3 +1,48 @@
+/* Skeleton Loader Styles */
+.skeleton {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    animation: skeleton-loading 1.5s infinite ease-in-out;
+}
+
+.skeleton-text {
+    height: 20px;
+    width: 100%;
+}
+
+.skeleton-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeleton-card {
+    width: 100%;
+    height: 60px;
+}
+
+.skeleton-header {
+    height: 10px;
+    margin-bottom: 10px;
+}
+
+.skeleton-body {
+    height: 15px;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-color: #e0e0e0;
+    }
+    50% {
+        background-color: #cfd8dc;
+    }
+    100% {
+        background-color: #e0e0e0;
+    }
+}
+
+/* Add to existing CSS */
 body {
     font-family: 'Roboto', sans-serif;
     width: 350px;
@@ -132,4 +177,36 @@ h1, h2 {
 
 #fact-check-list li {
     margin-bottom: 10px;
+}
+
+/* Skeleton Loader applied to areas like chat */
+.skeleton-chat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.skeleton-chat .skeleton-avatar {
+    margin-right: 10px;
+}
+
+.skeleton-chat .skeleton-body {
+    width: 70%;
+    height: 15px;
+}
+
+/* Skeleton Loader for Stat Cards */
+.skeleton-stat-card {
+    width: 45%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    height: 80px;
+    margin: 10px;
+}
+
+/* Skeleton Loading Indicator */
+.skeleton-loading {
+    height: 40px;
+    margin-bottom: 20px;
+    width: 100%;
 }
