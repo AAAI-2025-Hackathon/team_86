@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Web Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="popup">
+        <nav>
+            <ul>
+                <li><a href="#" data-page="dashboard" class="active">Dashboard</a></li>
+                <li><a href="#" data-page="summary">Summary</a></li>
+                <li><a href="#" data-page="factCheck">Fact Check</a></li>
+                <li><a href="#" data-page="chat">Chat</a></li>
+            </ul>
+        </nav>
+        <main id="content">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page active">
+                <h1>AI Web Assistant</h1>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>Pages Analyzed</h3>
+                        <p id="pages-analyzed">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Facts Checked</h3>
+                        <p id="facts-checked">0</p>
+                    </div>
+                </div>
+                <button id="analyze-page" class="btn">Analyze Current Page</button>
+            </div>
+
+            <!-- Summary Page -->
+            <div id="summary" class="page">
+                <h2>Page Summary</h2>
+                <div id="summary-content">
+                    <p id="loading" class="loading">Generating summary...</p>
+                    <p id="summary-text"></p>
+                </div>
+                <button id="refresh-summary" class="btn">Refresh Summary</button>
+            </div>
+
+            <!-- Fact Check Page -->
+            <div id="factCheck" class="page">
+                <h2>Fact Check</h2>
+                <div id="fact-check-content">
+                    <p id="fact-check-loading" class="loading">Checking facts...</p>
+                    <ul id="fact-check-list"></ul>
+                </div>
+                <button id="run-fact-check" class="btn">Run Fact Check</button>
+            </div>
+
+            <!-- Chat Page -->
+            <div id="chat" class="page">
+                <h2>Chat with AI</h2>
+                <div id="chat-messages"></div>
+                <div class="chat-input">
+                    <input type="text" id="user-input" placeholder="Ask a question...">
+                    <button id="send-message" class="btn">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
