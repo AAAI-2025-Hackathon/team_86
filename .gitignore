@@ -2,7 +2,7 @@
 **/.env*
 .vscode
 tasks.md
-Dockerfile
+# Dockerfile
 .venv
 
 # Server
@@ -11,6 +11,7 @@ Dockerfile
 **/.pytest_cache
 htmlcov
 src/server/logs
+src/server/models/website_clf_chkpts
 
 # Client
 src/client/node_modules
