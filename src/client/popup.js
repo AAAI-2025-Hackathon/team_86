@@ -95,31 +95,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to handle different API requests
     async function sendToAPI(endpoint, data) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const response = await fetch(`${API_BASE_URL}${endpoint}?webpage_text=${data}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },  // Specify plain text content type
-                body: data,  // Send the string directly as the body
+                body: data,  // Send the string directly as the body (no encoding)
             });
-    
-            const responseData = await response.json();
-            return responseData;
+            return await response.json(); // Ensure to return the response JSON
         } catch (error) {
-            console.error('Error sending to API:', error);
-            showError('Failed to send data to API');
-            return null;
+            console.error('Error:', error);
         }
     }
-    
 
     // Event listener for the "analyze" button
     analyzeButton.addEventListener('click', async () => {
         try {
             const bodyContent = await extractBodyContent(); // Extract page content
-            const data = { html: bodyContent };
 
             // Send data to the analyze endpoint
-            const dataFromAPI = await sendToAPI('/analyze', data);
-            
+            const dataFromAPI = await sendToAPI('/analyze', bodyContent);
+
             if (dataFromAPI) {
                 updateSummary(dataFromAPI.summary);
                 updateFactCheck(dataFromAPI.factCheck);
@@ -130,30 +124,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-        // Event listener for the "refresh summary" button
-        refreshSummaryButton.addEventListener('click', async () => {
-            try {
-                const bodyContent = await extractBodyContent(); // Extract page content
+    // Event listener for the "refresh summary" button
+    refreshSummaryButton.addEventListener('click', async () => {
+        try {
+            const bodyContent = await extractBodyContent(); // Extract page content
 
-                // Send the body content directly as a string to the refresh-summary endpoint
-                const dataFromAPI = await sendToAPI('/ai/summarize', bodyContent);
+            // Send the body content directly as a string to the refresh-summary endpoint
+            const dataFromAPI = await sendToAPI('/ai/summarize', bodyContent);
 
-                if (dataFromAPI) {
-                    updateSummary(dataFromAPI.summary);
-                }
-            } catch (error) {
-                console.error('Refresh summary error:', error);
+            if (dataFromAPI) {
+                updateSummary(dataFromAPI.summary);
             }
-        });
+        } catch (error) {
+            console.error('Refresh summary error:', error);
+        }
+    });
 
     // Event listener for the "run fact check" button
     runFactCheckButton.addEventListener('click', async () => {
         try {
             const bodyContent = await extractBodyContent(); // Extract page content
-            const data = { html: bodyContent };
 
             // Send data to the run-fact-check endpoint
-            const dataFromAPI = await sendToAPI('/run-fact-check', data);
+            const dataFromAPI = await sendToAPI('/run-fact-check', bodyContent);
 
             if (dataFromAPI) {
                 updateFactCheck(dataFromAPI.factCheck);
