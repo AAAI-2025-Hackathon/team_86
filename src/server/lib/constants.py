@@ -4,6 +4,8 @@ import os
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))  # path with respect to this file
 locate = lambda x: os.path.join(_CURRENT_DIR, x)
 
+DEFAULT_GENAI_MODEL = 'deepseek-r1:1.5b'
+
 ITOS = {
     0: 'Computers and Technology',
     1: 'E-Commerce',

@@ -1,4 +1,4 @@
-from server.lib.types import WebsiteCategory, Conversation
+from server.lib.types import WebsiteCategory, Conversation, ModelName
 from server.lib.utils import prompt_llm
 
 async def _get_prompt_for_category(category: WebsiteCategory) -> str:
@@ -28,6 +28,6 @@ async def _get_prompt_for_category(category: WebsiteCategory) -> str:
     return f'Website category: {category}'
 
 
-async def chat(conv: Conversation, html: str, category: WebsiteCategory) -> str:
+async def chat(conv: Conversation, html: str, category: WebsiteCategory, model_name: ModelName) -> str:
     prompt_for_category = await _get_prompt_for_category(category)
     return await prompt_llm(prompt_for_category)

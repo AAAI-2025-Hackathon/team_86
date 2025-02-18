@@ -30,7 +30,7 @@ This is a Chrome extension that provides real-time, context-aware AI assistance 
     | **Component**        | **Technology**          |
     |----------------------|------------------------|
     | **Backend API**      | FastAPI (Python)        |
-    | **AI Models**        | DeepSeek (1.5B), DeepSeek (8B), Mistral (7B) |
+    | **AI Models**        | DeepSeek (1.5B), DeepSeek (8B), Llama 3.1 (8B) |
     | **Summarization & Fact-Checking** | LangChain, LLaMA-Index |
     | **Vector Search (Retrieval)** | FAISS, ChromaDB |
     | **Web Scraping (Structured Data)** | BeautifulSoup, Playwright |
