@@ -1,81 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Web Assistant</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="popup">
-        <nav>
-            <ul>
-                <li><a href="#" data-page="dashboard" class="active">Dashboard</a></li>
-                <li><a href="#" data-page="summary">Summary</a></li>
-                <li><a href="#" data-page="factCheck">Fact Check</a></li>
-                <li><a href="#" data-page="chat">Chat</a></li>
+
+<body class="bg-gray-100 font-roboto">
+    <div id="popup" class="popup w-96 h-[600px] flex flex-col relative">
+        <!-- Resize handles -->
+        <div class="resize-handle resize-left absolute top-0 left-0 h-full cursor-ew-resize"></div>
+        <div class="resize-handle resize-right absolute top-0 right-0 h-full cursor-ew-resize"></div>
+
+        <nav class="bg-blue-500 text-white">
+            <ul class="flex justify-around p-2">
+                <li><a href="#" data-page="dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="#" data-page="summary" class="nav-link">Summary</a></li>
+                <li><a href="#" data-page="factCheck" class="nav-link">Fact Check</a></li>
+                <li><a href="#" data-page="chat" class="nav-link">Chat</a></li>
             </ul>
         </nav>
-        <main id="content">
+        <main id="content" class="flex-grow p-4 overflow-y-auto">
             <!-- Dashboard Page -->
             <div id="dashboard" class="page active">
-                <h1>AI Web Assistant</h1>
-                <div class="dashboard-stats">
-                    <!-- Skeleton loader for stats -->
-                    <div class="stat-card skeleton-stat-card"></div>
-                    <div class="stat-card skeleton-stat-card"></div>
+                <h1 class="text-2xl font-bold mb-4">AI Web Assistant</h1>
+                <div class="dashboard-stats grid grid-cols-2 gap-4 mb-4">
+                    <div class="stat-card bg-white rounded-lg p-4 shadow">
+                        <h3 class="text-sm text-gray-600">Pages Analyzed</h3>
+                        <button id="extract">Extract Body Content</button>
+                        <div id="content"></div>
+                 
+                        <p id="pages-analyzed" class="text-2xl font-bold text-blue-500 skeleton">0</p>
+                    </div>
+                    
+                    <div class="stat-card bg-white rounded-lg p-4 shadow">
+                        <h3 class="text-sm text-gray-600">Facts Checked</h3>
+                        <p id="facts-checked" class="text-2xl font-bold text-blue-500 skeleton">0</p>
+                    </div>
                 </div>
-                <button id="analyze-page" class="btn">Analyze Current Page</button>
+
+                <button id="analyze-page" class="btn w-full">Analyze Current Page</button>
             </div>
 
             <!-- Summary Page -->
-            <div id="summary" class="page">
-                <h2>Page Summary</h2>
-                <div id="summary-content">
-                    <!-- Skeleton loader for summary text -->
-                    <p id="loading" class="loading skeleton skeleton-text">Generating summary...</p>
-                    <p id="summary-text" class="skeleton skeleton-text"></p>
+            <div id="summary" class="page hidden">
+                <h2 class="text-xl font-bold mb-4">Page Summary</h2>
+                <div id="summary-content" class="bg-white rounded-lg p-4 min-h-[200px]">
+                    <p id="loading" class="loading skeleton">Generating summary...</p>
+                    <p id="summary-text"></p>
                 </div>
-                <button id="refresh-summary" class="btn">Refresh Summary</button>
+                <button id="refresh-summary" class="btn w-full mt-4">Refresh Summary</button>
             </div>
 
             <!-- Fact Check Page -->
-            <div id="factCheck" class="page">
-                <h2>Fact Check</h2>
-                <div id="fact-check-content">
-                    <!-- Skeleton loader for fact check list -->
-                    <p id="fact-check-loading" class="loading skeleton skeleton-text">Checking facts...</p>
+            <div id="factCheck" class="page hidden">
+                <h2 class="text-xl font-bold mb-4">Fact Check</h2>
+                <div id="fact-check-content" class="bg-white rounded-lg p-4 min-h-[200px]">
+                    <p id="fact-check-loading" class="loading skeleton">Checking facts...</p>
                     <ul id="fact-check-list">
-                        <li class="skeleton skeleton-text"></li>
-                        <li class="skeleton skeleton-text"></li>
-                        <li class="skeleton skeleton-text"></li>
+                        <li class="skeleton h-6 w-full mb-2"></li>
+                        <li class="skeleton h-6 w-full mb-2"></li>
+                        <li class="skeleton h-6 w-full mb-2"></li>
                     </ul>
                 </div>
-                <button id="run-fact-check" class="btn">Run Fact Check</button>
+                <button id="run-fact-check" class="btn w-full mt-4">Run Fact Check</button>
             </div>
-
             <!-- Chat Page -->
-            <div id="chat" class="page">
-                <h2>Chat with AI</h2>
-                <!-- Skeleton loader for chat messages -->
-                <div id="chat-messages">
-                    <div class="skeleton-chat">
-                        <div class="skeleton-avatar skeleton"></div>
-                        <div class="skeleton-body skeleton"></div>
-                    </div>
-                    <div class="skeleton-chat">
-                        <div class="skeleton-avatar skeleton"></div>
-                        <div class="skeleton-body skeleton"></div>
+            <div id="chat" class="page hidden">
+                <h2 class="text-xl font-bold mb-4">Chat with AI</h2>
+                <div id="chat-messages" class="bg-white rounded-lg p-4 h-96 overflow-y-auto mb-4">
+                    <!-- Initial AI greeting message with CSS typewriter effect -->
+                    <div class="message ai-message p-2 bg-gray-200 rounded-lg mb-2">
+                        <div class="font-semibold text-gray-700">AI:</div>
+                        <span id="typed-message" class="typewriter">Hello, how can I help you today?</span>
                     </div>
                 </div>
-                <div class="chat-input">
-                    <input type="text" id="user-input" placeholder="Ask a question...">
-                    <button id="send-message" class="btn">Send</button>
+                <div class="chat-input flex">
+                    <input type="text" id="user-input" class="flex-grow border rounded-l-lg p-2" placeholder="Ask a question...">
+                    <button id="send-message" class="btn rounded-l-none">Send</button>
                 </div>
             </div>
+            
+            
         </main>
     </div>
+
     <script src="popup.js"></script>
 </body>
+
 </html>
