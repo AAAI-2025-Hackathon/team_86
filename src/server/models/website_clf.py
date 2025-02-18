@@ -26,7 +26,7 @@ def load_model_and_tokenizer() -> tuple[AutoModelForSequenceClassification, Auto
     return best_model, tokenizer
 
 
-async def classify(keywords_list: list[str], model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer) -> WebsiteCategory:
-    out = model(**encode_keywords(' '.join(keywords_list), tokenizer, squeeze=False))
+async def classify(webpage_text: str, model: AutoModelForSequenceClassification, tokenizer: AutoTokenizer) -> WebsiteCategory:
+    out = model(**encode_keywords(webpage_text, tokenizer, squeeze=False))
     label = torch.argmax(out.logits).item()
     return ITOS[label]
