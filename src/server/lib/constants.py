@@ -4,6 +4,7 @@ import os
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))  # path with respect to this file
 locate = lambda x: os.path.join(_CURRENT_DIR, x)
 
+OLLAMA_URL = 'http://host.docker.internal:11434/api/generate'
 DEFAULT_GENAI_MODEL = 'deepseek-r1:1.5b'
 
 ITOS = {
