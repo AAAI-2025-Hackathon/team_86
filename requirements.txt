@@ -3,6 +3,7 @@ accelerate==1.3.0
 aiohappyeyeballs==2.4.6
 aiohttp==3.11.12
 aiosignal==1.3.2
+-e git+https://github.com/AAAI-2025-Hackathon/team_86.git@c17199a263ee784b9a344497c8d4fbe8b10c7ce9#egg=aipa&subdirectory=src
 annotated-types==0.7.0
 anyio==4.8.0
 asgiref==3.8.1
@@ -209,6 +210,7 @@ watchfiles==1.0.4
 wcwidth==0.2.13
 websocket-client==1.8.0
 websockets==14.2
+wikipedia==1.4.0
 wrapt==1.17.2
 yarl==1.18.3
 zipp==3.21.0
