@@ -16,6 +16,12 @@ This is a Chrome extension that provides real-time, context-aware AI assistance 
 - [x] The entry includes a 2-minute maximum length demo video here: [Video](./submission_video.mp4)
 - [x] The entry clearly identifies the selected theme in the README and the video.
 
+## Features
+The features below all use the webpage the user is on to provide a relevant response:
+- Summarization
+- Fact-checking
+- User & AI chat system
+
 ## Tasks
 ### Frontend Developer
 - Develops Chrome Extension UI (Next.js, TailwindCSS).

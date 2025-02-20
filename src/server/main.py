@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from server.lib.types import Conversation, ModelName
 from server.lib.constants import DEFAULT_GENAI_MODEL
-from server.models import website_clf, ai_assistant, summarizer, fact_checker
+from server.models import website_clf, summarizer, fact_checker
+from server.models.chatbot import Chatbot
 
 model, tokenizer = website_clf.load_model_and_tokenizer()
+chatbot = Chatbot()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -16,9 +18,9 @@ app.add_middleware(
 
 
 @app.post('/ai/chat')
-async def chat(html: str, webpage_text: str, model_name: ModelName = DEFAULT_GENAI_MODEL, conv: Conversation = []) -> str:
+async def chat(webpage_text: str, model_name: ModelName = DEFAULT_GENAI_MODEL, conv: Conversation = []) -> str:
     category = await website_clf.classify(webpage_text, model, tokenizer)
-    return await ai_assistant.chat(conv, html, category, model_name)
+    return await chatbot(webpage_text, category, model_name, conv)
 
 
 @app.post('/ai/summarize')
