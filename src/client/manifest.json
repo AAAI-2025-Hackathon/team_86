@@ -3,7 +3,7 @@
   "name": "AI Web Assistant",
   "version": "1.0.0",
   "description": "An AI-powered web assistant",
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "action": {
     "default_popup": "popup.html"
   },
