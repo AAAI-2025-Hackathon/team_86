@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,10 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body class="bg-gray-100 font-roboto">
     <div id="popup" class="popup w-96 h-[600px] flex flex-col relative">
-        <!-- Resize handles -->
         <div class="resize-handle resize-left absolute top-0 left-0 h-full cursor-ew-resize"></div>
         <div class="resize-handle resize-right absolute top-0 right-0 h-full cursor-ew-resize"></div>
 
@@ -24,25 +21,43 @@
                 <li><a href="#" data-page="chat" class="nav-link">Chat</a></li>
             </ul>
         </nav>
-        <main id="content" class="flex-grow p-4 overflow-y-auto">
+        <main id="home" class="flex-grow p-4 overflow-y-auto">
             <!-- Dashboard Page -->
             <div id="dashboard" class="page active">
                 <h1 class="text-2xl font-bold mb-4">AI Web Assistant</h1>
+                <div class="mb-4">
+                    <label for="model-select" class="block text-sm font-medium text-gray-700">Select Model:</label>
+                    <select id="model-select" class="mt-1 block w-full p-2 border rounded-lg">
+                        <option value="deepseek-r1:1.5b">DeepSeek R1 (1.5B)</option>
+                        <option value="deepseek-r1:8b">DeepSeek R1 (8B)</option>
+                        <option value="llama3.1:8b" selected>LLaMA 3.1 (8B)</option>
+                    </select>
+                </div>
                 <div class="dashboard-stats grid grid-cols-2 gap-4 mb-4">
                     <div class="stat-card bg-white rounded-lg p-4 shadow">
                         <h3 class="text-sm text-gray-600">Pages Analyzed</h3>
-                        <button id="extract">Extract Body Content</button>
-                        <div id="content"></div>
-                 
-                        <p id="pages-analyzed" class="text-2xl font-bold text-blue-500 skeleton">0</p>
+                        <p id="pages-analyzed" class="text-2xl font-bold text-blue-500">0</p>
                     </div>
-                    
                     <div class="stat-card bg-white rounded-lg p-4 shadow">
                         <h3 class="text-sm text-gray-600">Facts Checked</h3>
-                        <p id="facts-checked" class="text-2xl font-bold text-blue-500 skeleton">0</p>
+                        <p id="facts-checked" class="text-2xl font-bold text-blue-500">0</p>
                     </div>
                 </div>
-
+                <button id="extract" class="btn w-full mb-4">Extract Body Content</button>
+                <div id="content" class="bg-white rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Extracted Content</h3>
+                    <p class="text-gray-700">Click "Extract Body Content" to see the page text here.</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Latest Summary</h3>
+                    <p id="dashboard-summary" class="text-gray-700">No summary available yet.</p>
+                </div>
+                <div class="bg-white rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-2">Latest Fact Check</h3>
+                    <ul id="dashboard-fact-check" class="text-gray-700">
+                        <li>No facts checked yet.</li>
+                    </ul>
+                </div>
                 <button id="analyze-page" class="btn w-full">Analyze Current Page</button>
             </div>
 
@@ -61,19 +76,15 @@
                 <h2 class="text-xl font-bold mb-4">Fact Check</h2>
                 <div id="fact-check-content" class="bg-white rounded-lg p-4 min-h-[200px]">
                     <p id="fact-check-loading" class="loading skeleton">Checking facts...</p>
-                    <ul id="fact-check-list">
-                        <li class="skeleton h-6 w-full mb-2"></li>
-                        <li class="skeleton h-6 w-full mb-2"></li>
-                        <li class="skeleton h-6 w-full mb-2"></li>
-                    </ul>
+                    <ul id="fact-check-list"></ul>
                 </div>
                 <button id="run-fact-check" class="btn w-full mt-4">Run Fact Check</button>
             </div>
+
             <!-- Chat Page -->
             <div id="chat" class="page hidden">
                 <h2 class="text-xl font-bold mb-4">Chat with AI</h2>
                 <div id="chat-messages" class="bg-white rounded-lg p-4 h-96 overflow-y-auto mb-4">
-                    <!-- Initial AI greeting message with CSS typewriter effect -->
                     <div class="message ai-message p-2 bg-gray-200 rounded-lg mb-2">
                         <div class="font-semibold text-gray-700">AI:</div>
                         <span id="typed-message" class="typewriter">Hello, how can I help you today?</span>
@@ -84,12 +95,8 @@
                     <button id="send-message" class="btn rounded-l-none">Send</button>
                 </div>
             </div>
-            
-            
         </main>
     </div>
-
     <script src="popup.js"></script>
 </body>
-
 </html>
