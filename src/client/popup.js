@@ -107,14 +107,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Function to handle different API requests with model selection
-    async function sendToAPI(endpoint, data, modelName) {
+    async function sendToAPI(endpoint, data, modelName, jsonify=false) {
         try {
             const url = new URL(`${API_BASE_URL}${endpoint}`);
             url.searchParams.append('model_name', modelName);
+
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: data
+                headers: { 'Content-Type': jsonify ? 'application/json' : 'text/plain' },
+                body: jsonify ? JSON.stringify(data) : data
             });
             if (!response.ok) {
                 throw new Error(`API request failed with status ${response.status}`);
@@ -191,29 +192,19 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendChatMessage() {
         const message = userInput.value.trim();
         if (!message) return;
-    
+        console.log('msg', message)
         appendChatMessage('You', message);
         userInput.value = '';
     
         try {
-            const bodyContent = await extractBodyContent(); 
             const selectedModel = modelSelect.value;
-    
-        
-            const currentConv = getCurrentConversation();
-    
-  
-            const response = await sendToAPI('/ai/chat', {
-                html: message,
-                model_name: selectedModel,
-                conv: currentConv
-            });
-    
-            appendChatMessage('AI', response.response || response);
-    
-      
-            updateConversation(response.response);
-    
+            const aiMessage = await sendToAPI('/ai/chat', {
+                html: await extractBodyContent(),
+                conv: getCurrentConversation()
+            }, selectedModel, true);
+
+            appendChatMessage('AI', aiMessage);
+            updateConversation(aiMessage);
         } catch (error) {
             console.error('Chat error:', error);
             appendChatMessage('AI', 'Cannot respond due to an error.');
@@ -246,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return storedConversation ? JSON.parse(storedConversation) : conversationHistory;
     }
 
-    
+
     // UI Update Functions
     function updateSummary(summary) {
         const summaryText = document.getElementById('summary-text');
