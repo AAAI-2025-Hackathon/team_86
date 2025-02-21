@@ -6,6 +6,7 @@ locate = lambda x: os.path.join(_CURRENT_DIR, x)
 
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 DEFAULT_GENAI_MODEL = 'deepseek-r1:1.5b'
+NUM_CORES = os.cpu_count()
 
 ITOS = {
     0: 'Computers and Technology',

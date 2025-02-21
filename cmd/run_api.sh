@@ -1,2 +1,2 @@
-cd src/server
-uvicorn main:app --reload
+#!/bin/bash
+uvicorn src.server.main:app --reload

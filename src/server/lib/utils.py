@@ -1,9 +1,16 @@
 from textwrap import dedent
+from bs4 import BeautifulSoup
 import re, httpx
 from server.lib.types import ModelName
 from server.lib.constants import DEFAULT_GENAI_MODEL, OLLAMA_URL
 
-async def format_llm_response(response: str) -> str:
+def extract_text_from_html(html: str) -> str:
+    """Extracts and returns only the text content from an HTML string."""
+    soup = BeautifulSoup(html, "html.parser")
+    return soup.get_text()
+
+
+def format_llm_response(response: str) -> str:
     # Removes <think> tags
     response = re.sub(r'<think\b[^<]*(?:(?!<\/think>)<[^<]*)*<\/think>', '', response, flags=re.IGNORECASE)
     # Removes leading and trailing newline chars
