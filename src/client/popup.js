@@ -9,19 +9,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const popup = document.getElementById('popup');
     const resizeHandles = document.querySelectorAll('.resize-handle');
-    const extractButton = document.getElementById('extract'); // Extract button for the new functionality
+    const extractButton = document.getElementById('extract');
+    const modelSelect = document.getElementById('model-select');
 
-    const API_BASE_URL = 'http://localhost:8000'; // Your API base URL
+    const API_BASE_URL = 'http://localhost:8000';
 
-    // Navigation
+    // Persistent stats tracking
+    let stats = {
+        pagesAnalyzed: 0,
+        factsChecked: 0
+    };
+
+    //Initialise conversationHistory
+    let conversationHistory = [];
+
+    // Navigation with immediate action
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', async function(e) {
             e.preventDefault();
             const targetPage = this.getAttribute('data-page');
             navLinks.forEach(l => l.classList.remove('active', 'bg-blue-600'));
             this.classList.add('active', 'bg-blue-600');
             pages.forEach(page => page.classList.add('hidden'));
             document.getElementById(targetPage).classList.remove('hidden');
+
+            // Trigger actions based on the selected page
+            if (targetPage === 'summary') {
+                await refreshSummary(); // Trigger summary immediately
+            } else if (targetPage === 'factCheck') {
+                await runFactCheck(); // Trigger fact check immediately
+            } else if (targetPage === 'chat') {
+                // Optionally send an initial message or just show the chat
+                // For now, we'll keep it as is unless you want an initial AI message
+            }
         });
     });
 
@@ -44,10 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resize(e) {
         if (!isResizing) return;
-        
         const diff = e.clientX - startX;
         const newWidth = startWidth + diff;
-        
         if (newWidth >= 300 && newWidth <= 800) {
             popup.style.width = `${newWidth}px`;
         }
@@ -65,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
                 function: function() {
-                    return document.body.innerText;  // Extract body text
+                    return document.body.innerText;
                 }
             }, (results) => {
                 if (chrome.runtime.lastError) {
@@ -80,85 +98,160 @@ document.addEventListener('DOMContentLoaded', function() {
     // Event listener for the "extract" button
     extractButton.addEventListener('click', async () => {
         try {
-            // Extract body content from the current active tab
             const bodyContent = await extractBodyContent();
-            
-            // Display the extracted content in popup
             document.getElementById('content').textContent = bodyContent;
-
         } catch (error) {
             console.error('Error:', error);
             showError('Failed to extract content.');
         }
     });
 
-    // Function to handle different API requests
-    async function sendToAPI(endpoint, data) {
+    // Function to handle different API requests with model selection
+    async function sendToAPI(endpoint, data, modelName) {
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}?webpage_text=${data}`, {
+            const url = new URL(`${API_BASE_URL}${endpoint}`);
+            url.searchParams.append('model_name', modelName);
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },  // Specify plain text content type
-                body: data,  // Send the string directly as the body (no encoding)
+                headers: { 'Content-Type': 'text/plain' },
+                body: data
             });
-            return await response.json(); // Ensure to return the response JSON
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+            return await response.json();
         } catch (error) {
             console.error('Error:', error);
+            throw error; // Re-throw to handle in calling function
         }
     }
 
     // Event listener for the "analyze" button
     analyzeButton.addEventListener('click', async () => {
         try {
-            const bodyContent = await extractBodyContent(); // Extract page content
-
-            // Send data to the analyze endpoint
-            const dataFromAPI = await sendToAPI('/analyze', bodyContent);
+            const bodyContent = await extractBodyContent();
+            const selectedModel = modelSelect.value;
+            const dataFromAPI = await sendToAPI('/analyze', bodyContent, selectedModel);
 
             if (dataFromAPI) {
                 updateSummary(dataFromAPI.summary);
                 updateFactCheck(dataFromAPI.factCheck);
-                updateStats(dataFromAPI.stats);
+                updateStats({ 
+                    pagesAnalyzed: 1,
+                    factsChecked: Array.isArray(dataFromAPI.factCheck) ? dataFromAPI.factCheck.length : 0 
+                });
             }
         } catch (error) {
             console.error('Analyze error:', error);
+            updateSummary('Cannot generate summary due to an error.');
+            updateFactCheck(['Cannot perform fact check due to an error.']);
         }
     });
 
-    // Event listener for the "refresh summary" button
-    refreshSummaryButton.addEventListener('click', async () => {
+    // Function for "refresh summary" (also called on nav click)
+    async function refreshSummary() {
         try {
-            const bodyContent = await extractBodyContent(); // Extract page content
-
-            // Send the body content directly as a string to the refresh-summary endpoint
-            const dataFromAPI = await sendToAPI('/ai/summarize', bodyContent);
+            const bodyContent = await extractBodyContent();
+            const selectedModel = modelSelect.value;
+            const dataFromAPI = await sendToAPI('/ai/summarize', bodyContent, selectedModel);
 
             if (dataFromAPI) {
-                updateSummary(dataFromAPI.summary);
+                updateSummary(dataFromAPI.summary || dataFromAPI);
+                updateStats({ pagesAnalyzed: 1 });
             }
         } catch (error) {
             console.error('Refresh summary error:', error);
+            updateSummary('Cannot generate summary due to an error.');
         }
-    });
+    }
 
-    // Event listener for the "run fact check" button
-    runFactCheckButton.addEventListener('click', async () => {
+    refreshSummaryButton.addEventListener('click', refreshSummary);
+
+    // Function for "run fact check" (also called on nav click)
+    async function runFactCheck() {
         try {
-            const bodyContent = await extractBodyContent(); // Extract page content
-
-            // Send data to the run-fact-check endpoint
-            const dataFromAPI = await sendToAPI('/run-fact-check', bodyContent);
+            const bodyContent = await extractBodyContent();
+            const selectedModel = modelSelect.value;
+            const dataFromAPI = await sendToAPI('/ai/fact_check', bodyContent, selectedModel);
 
             if (dataFromAPI) {
-                updateFactCheck(dataFromAPI.factCheck);
+                updateFactCheck(dataFromAPI.factCheck || dataFromAPI);
+                updateStats({ 
+                    factsChecked: Array.isArray(dataFromAPI.factCheck) ? dataFromAPI.factCheck.length : 1 
+                });
             }
         } catch (error) {
             console.error('Fact check error:', error);
+            updateFactCheck(['Cannot perform fact check due to an error.']);
         }
-    });
+    }
 
+    runFactCheckButton.addEventListener('click', runFactCheck);
+    
+    async function sendChatMessage() {
+        const message = userInput.value.trim();
+        if (!message) return;
+    
+        appendChatMessage('You', message);
+        userInput.value = '';
+    
+        try {
+            const bodyContent = await extractBodyContent(); 
+            const selectedModel = modelSelect.value;
+    
+        
+            const currentConv = getCurrentConversation();
+    
+  
+            const response = await sendToAPI('/ai/chat', {
+                html: message,
+                model_name: selectedModel,
+                conv: currentConv
+            });
+    
+            appendChatMessage('AI', response.response || response);
+    
+      
+            updateConversation(response.response);
+    
+        } catch (error) {
+            console.error('Chat error:', error);
+            appendChatMessage('AI', 'Cannot respond due to an error.');
+        }
+    }
+    
+
+
+    function updateConversation(aiResponse) {
+        const userMessage = {
+            sender: 'You',
+            message: userInput.value.trim()
+        };
+
+        const aiMessage = {
+            sender: 'AI',
+            message: aiResponse.response || aiResponse
+        };
+
+        conversationHistory.push(userMessage, aiMessage);
+
+        appendChatMessage(userMessage.sender, userMessage.message);
+        appendChatMessage(aiMessage.sender, aiMessage.message);
+
+        localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+    }
+
+    function getCurrentConversation() {
+        const storedConversation = localStorage.getItem('conversationHistory');
+        return storedConversation ? JSON.parse(storedConversation) : conversationHistory;
+    }
+
+    
     // UI Update Functions
     function updateSummary(summary) {
-        document.getElementById('summary-text').textContent = summary || 'No summary available';
+        const summaryText = document.getElementById('summary-text');
+        summaryText.textContent = summary || 'No summary available';
+        summaryText.className = summary.startsWith('Cannot') ? 'text-red-500' : 'text-gray-700';
         document.getElementById('loading').style.display = 'none';
     }
 
@@ -172,40 +265,24 @@ document.addEventListener('DOMContentLoaded', function() {
             facts.forEach(fact => {
                 const li = document.createElement('li');
                 li.textContent = fact;
-                li.className = 'mb-2 p-2 bg-gray-50 rounded';
+                li.className = fact.startsWith('Cannot') ? 'text-red-500 mb-2' : 'mb-2 p-2 bg-gray-50 rounded';
                 factList.appendChild(li);
             });
         } else {
-            factList.innerHTML = '<li class="text-gray-500">No facts to check</li>';
+            const li = document.createElement('li');
+            li.textContent = 'No facts to check';
+            li.className = 'text-gray-500';
+            factList.appendChild(li);
         }
     }
 
-    function updateStats(stats) {
-        if (stats) {
-            document.getElementById('pages-analyzed').textContent = stats.pagesAnalyzed || '0';
-            document.getElementById('facts-checked').textContent = stats.factsChecked || '0';
-        }
-    }
-
-    // Chat Functions
-    async function sendChatMessage() {
-        const message = userInput.value.trim();
-        if (!message) return;
-
-        appendChatMessage('You', message);
-        userInput.value = '';
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-            
-            const data = await response.json();
-            appendChatMessage('AI', data.response);
-        } catch (error) {
-            appendChatMessage('AI', 'Sorry, I encountered an error processing your message.');
+    // Updated updateStats function to accumulate stats
+    function updateStats(newStats) {
+        if (newStats) {
+            stats.pagesAnalyzed += newStats.pagesAnalyzed || 0;
+            stats.factsChecked += newStats.factsChecked || 0;
+            document.getElementById('pages-analyzed').textContent = stats.pagesAnalyzed;
+            document.getElementById('facts-checked').textContent = stats.factsChecked;
         }
     }
 
@@ -214,22 +291,26 @@ document.addEventListener('DOMContentLoaded', function() {
         msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100'} rounded-lg mb-2`;
         msgElement.innerHTML = ` 
             <div class="font-semibold text-gray-700">${sender}:</div>
-            <div>${message}</div>
+            <div class="${message.startsWith('Cannot') ? 'text-red-500' : ''}">${message}</div>
         `;
         chatMessages.appendChild(msgElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     function showError(message) {
-        // Add error notification functionality here
         console.error(message);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-500 p-2 mb-2';
+        errorDiv.textContent = message;
+        document.getElementById('content').prepend(errorDiv);
     }
 
-    // Event Listener for sendMessage
+    // Event Listeners
     sendMessageButton.addEventListener('click', sendChatMessage);
     userInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') {
             sendChatMessage();
         }
     });
+    
 });
