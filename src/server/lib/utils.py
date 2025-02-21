@@ -6,7 +6,7 @@ from server.lib.constants import DEFAULT_GENAI_MODEL, OLLAMA_URL
 
 def extract_text_from_html(html: str) -> str:
     """Extracts and returns only the text content from an HTML string."""
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, features='html.parser')
     return soup.get_text()
 
 

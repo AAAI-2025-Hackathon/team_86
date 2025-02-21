@@ -50,8 +50,8 @@ class Chatbot:
         """Loads the given conversation history from strings to chat schemas"""
         if len(conv) == 0: return
         for msg in conv[:-1]:
-            sender, content = msg['sender'], msg['content']
+            sender, content = msg['sender'], msg['message']
             match sender:
-                case 'chatbot': self.history.append(AIMessage(content))
-                case 'system': self.history.append(SystemMessage(content))
-                case _: self.history.append(HumanMessage(content))
+                case 'AI': self.history.append(AIMessage(content))
+                case 'System': self.history.append(SystemMessage(content))
+                case 'You': self.history.append(HumanMessage(content))
