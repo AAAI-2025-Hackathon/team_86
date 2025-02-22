@@ -1,23 +1,35 @@
-import json, wikipedia
+import re, json, wikipedia
 from server.lib.types import WebsiteCategory, ModelName
-from server.lib.utils import prompt_llm
+from server.lib.utils import prompt_llm, nlp
 
-async def _extract_claims(webpage_text: str, category: WebsiteCategory) -> list[str]:
-    claims = await prompt_llm(f'''
-        Example: 
-        - Given: "Mona Lisa, oil painting on a poplar wood panel by Leonardo da Vinci, probably the world’s most famous painting."
-        - Expected response: ["Mona Lisa is Leonardo da Vinci's oil painting.", "Mona Lisa is probably the world's most famous painting."]
+def _is_factual_claim(token: str) -> bool:
+    """
+    A basic heuristic to decide if a sentence likely contains a factual claim.
+    This function checks for digits, percentages, years, and specific claim-indicative keywords.
+    """
+    # Check for digits, percentages, or years
+    # if re.search(r'\d', sentence):
+    #     return True
 
-        Extract verifiable factual claims from the following webpage text of category "{category}":
-        "{webpage_text}"
-        Please only return a JSON array of extracted string claims (**list[str]**) found only inside the text.
-    ''')
-    try:
-        claims = claims.replace('```json', '').replace('```', '')
-        if not ('[' in claims and ']' in claims and '"' in claims): raise ValueError('Invalid array of claims.')
-        return json.loads(claims)
-    except:
-        return webpage_text.split()
+    # List of keywords that might indicate a factual assertion
+    claim_keywords = ['report', 'claim', 'states', 'announce', 'reveal', 'according to', 'evidenced', 'found', 'is', 'are']
+    for kw in claim_keywords:
+        if kw in token.lower().split():
+            return True
+    return False
+
+
+async def _extract_claims(webpage_text: str) -> list[str]:
+    doc = nlp(webpage_text)
+    claims = []
+    for sent in doc.sents:
+        for token in sent.text.split('\n'):
+            if _is_factual_claim(token):
+                claims.append(token)
+            if len(claims) > 7: break
+        if len(claims) > 7: break
+    print('claims:', claims)
+    return claims
 
 
 async def _search_for_evidence(claims: list[str]) -> dict[str, list[str]]:
@@ -62,7 +74,7 @@ async def _search_for_evidence(claims: list[str]) -> dict[str, list[str]]:
     return claim_evidence
 
 
-async def _fact_check_with_CoT(claims_with_evidence: dict[str, list[str]], model_name: ModelName) -> str:
+async def _fact_check_with_CoT(claims_with_evidence: dict[str, list[str]], category: WebsiteCategory, model_name: ModelName) -> str:
     '''
     Uses CoT reasoning to fact-check claims with evidence.
 
@@ -76,7 +88,7 @@ async def _fact_check_with_CoT(claims_with_evidence: dict[str, list[str]], model
     response_types = '{True, False, Misleading, Needs More Evidence}'
 
     prompt = f'''
-    You are an AI fact-checker. Using **Chain-of-Thought reasoning**, verify the following claims based on the provided Wikipedia evidence.
+    You are an AI fact-checker. Using **Chain-of-Thought reasoning**, verify the following claims based on the provided Wikipedia evidence. The claims are taken from a website of category "{category}".
 
     ### **Step-by-Step Fact-Checking Process**:
     1. **Identify the Claim** – Read the claim carefully.
@@ -88,7 +100,7 @@ async def _fact_check_with_CoT(claims_with_evidence: dict[str, list[str]], model
     ### **Claims and Evidence**:
     {json.dumps(claims_with_evidence, indent=4)}
 
-    Now, follow the fact-checking process above and provide a structured response for each claim.
+    Now, follow the fact-checking process above and provide a concise, structured response for each claim. Your response will be read by the user.
     '''
 
     return await prompt_llm(prompt, model_name)
@@ -96,8 +108,10 @@ async def _fact_check_with_CoT(claims_with_evidence: dict[str, list[str]], model
 
 async def fact_check(webpage_text: str, category: WebsiteCategory, model_name: ModelName) -> str:
     # Step 1: Extract claims from webpage text
-    claims = await _extract_claims(webpage_text, category)
+    claims = await _extract_claims(webpage_text)
     # Step 2: Retrieve Wikipedia evidence
     claim_evidence = await _search_for_evidence(claims)
     # Step 3: Perform fact-checking using CoT reasoning
-    return await _fact_check_with_CoT(claim_evidence, model_name)
+    res = await _fact_check_with_CoT(claim_evidence, category, model_name)
+    print('res:', res)
+    return res

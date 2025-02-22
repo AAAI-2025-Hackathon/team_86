@@ -249,25 +249,34 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loading').style.display = 'none'
     }
 
-    function updateFactCheck(facts) {
+    function updateFactCheck(analysis) {
         const factList = document.getElementById('fact-check-list')
         const loading = document.getElementById('fact-check-loading')
         loading.style.display = 'none'
         factList.innerHTML = ''
-        
-        if (Array.isArray(facts) && facts.length > 0) {
-            facts.forEach(fact => {
-                const li = document.createElement('li')
-                li.textContent = fact
-                li.className = fact.startsWith('Cannot') ? 'text-red-500 mb-2' : 'mb-2 p-2 bg-gray-50 rounded'
-                factList.appendChild(li)
-            })
+
+        console.log('analysis', analysis)
+
+        if (typeof analysis === 'string') {
+            factList.innerHTML = markdownToHTML(analysis)
         } else {
-            const li = document.createElement('li')
-            li.textContent = 'No facts to check'
-            li.className = 'text-gray-500'
-            factList.appendChild(li)
+            factList.textContent = 'No facts to check'
+            factList.className = 'text-gray-500'
         }
+        
+        // if (Array.isArray(facts) && facts.length > 0) {
+        //     facts.forEach(fact => {
+        //         const li = document.createElement('li')
+        //         li.textContent = fact
+        //         li.className = fact.startsWith('Cannot') ? 'text-red-500 mb-2' : 'mb-2 p-2 bg-gray-50 rounded'
+        //         factList.appendChild(li)
+        //     })
+        // } else {
+        //     const li = document.createElement('li')
+        //     li.textContent = 'No facts to check'
+        //     li.className = 'text-gray-500'
+        //     factList.appendChild(li)
+        // }
     }
 
     // Updated updateStats function to accumulate stats

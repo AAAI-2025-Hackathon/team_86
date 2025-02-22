@@ -1,8 +1,10 @@
 from textwrap import dedent
 from bs4 import BeautifulSoup
-import re, httpx
+import re, httpx, spacy
 from server.lib.types import ModelName
 from server.lib.constants import DEFAULT_GENAI_MODEL, OLLAMA_URL
+
+nlp = spacy.load("en_core_web_sm")
 
 def extract_text_from_html(html: str) -> str:
     """Extracts and returns only the text content from an HTML string."""
