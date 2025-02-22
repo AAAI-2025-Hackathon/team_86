@@ -1,19 +1,11 @@
-import re, json, wikipedia
+import json, wikipedia
 from server.lib.types import WebsiteCategory, ModelName
+from server.lib.constants import CLAIM_KEYWORDS
 from server.lib.utils import prompt_llm, nlp
 
 def _is_factual_claim(token: str) -> bool:
-    """
-    A basic heuristic to decide if a sentence likely contains a factual claim.
-    This function checks for digits, percentages, years, and specific claim-indicative keywords.
-    """
-    # Check for digits, percentages, or years
-    # if re.search(r'\d', sentence):
-    #     return True
-
     # List of keywords that might indicate a factual assertion
-    claim_keywords = ['report', 'claim', 'states', 'announce', 'reveal', 'according to', 'evidenced', 'found', 'is', 'are']
-    for kw in claim_keywords:
+    for kw in CLAIM_KEYWORDS:
         if kw in token.lower().split():
             return True
     return False
@@ -28,7 +20,6 @@ async def _extract_claims(webpage_text: str) -> list[str]:
                 claims.append(token)
             if len(claims) > 7: break
         if len(claims) > 7: break
-    print('claims:', claims)
     return claims
 
 

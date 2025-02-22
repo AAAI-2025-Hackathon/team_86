@@ -195,9 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendChatMessage() {
         const message = userInput.value.trim()
         if (!message) return
-        console.log('msg', message)
         appendChatMessage('You', message)
         userInput.value = ''
+        console.log(conversationHistory)
     
         try {
             const selectedModel = modelSelect.value
@@ -205,9 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 html: await extractBodyContent(),
                 conv: getCurrentConversation()
             }, selectedModel, true)
+            console.log('aiMessage', aiMessage)
 
             appendChatMessage('AI', aiMessage)
-            updateConversation(aiMessage)
+            // updateConversation(aiMessage)
         } catch (error) {
             console.error('Chat error:', error)
             appendChatMessage('AI', 'Cannot respond due to an error.')
@@ -216,22 +217,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    function updateConversation(aiResponse) {
-        const userMessage = {
-            sender: 'You',
-            message: userInput.value.trim()
-        }
-
-        const aiMessage = {
-            sender: 'AI',
-            message: aiResponse.response || aiResponse
-        }
-
-        conversationHistory.push(userMessage, aiMessage)
-
-        appendChatMessage(userMessage.sender, userMessage.message)
-        appendChatMessage(aiMessage.sender, aiMessage.message)
-
+    function updateConversation(message) {
+        conversationHistory.push(message)
         localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
     }
 
@@ -250,33 +237,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateFactCheck(analysis) {
-        const factList = document.getElementById('fact-check-list')
+        const factCheckContent = document.getElementById('fact-check-content')
         const loading = document.getElementById('fact-check-loading')
         loading.style.display = 'none'
-        factList.innerHTML = ''
-
-        console.log('analysis', analysis)
+        factCheckContent.innerHTML = ''
 
         if (typeof analysis === 'string') {
-            factList.innerHTML = markdownToHTML(analysis)
+            factCheckContent.innerHTML = markdownToHTML(analysis)
         } else {
-            factList.textContent = 'No facts to check'
-            factList.className = 'text-gray-500'
+            factCheckContent.textContent = 'No facts to check'
+            factCheckContent.className = 'text-gray-500'
         }
-        
-        // if (Array.isArray(facts) && facts.length > 0) {
-        //     facts.forEach(fact => {
-        //         const li = document.createElement('li')
-        //         li.textContent = fact
-        //         li.className = fact.startsWith('Cannot') ? 'text-red-500 mb-2' : 'mb-2 p-2 bg-gray-50 rounded'
-        //         factList.appendChild(li)
-        //     })
-        // } else {
-        //     const li = document.createElement('li')
-        //     li.textContent = 'No facts to check'
-        //     li.className = 'text-gray-500'
-        //     factList.appendChild(li)
-        // }
     }
 
     // Updated updateStats function to accumulate stats
@@ -290,14 +261,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function appendChatMessage(sender, message) {
+        console.log({ sender, message })
         const msgElement = document.createElement('div')
         msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100'} rounded-lg mb-2`
         msgElement.innerHTML = ` 
             <div class="font-semibold text-gray-700">${sender}:</div>
-            <div class="${message.startsWith('Cannot') ? 'text-red-500' : ''}">${message}</div>
+            <div class="${message.startsWith('Cannot') ? 'text-red-500' : ''}">${markdownToHTML(message)}</div>
         `
         chatMessages.appendChild(msgElement)
         chatMessages.scrollTop = chatMessages.scrollHeight
+        updateConversation({ sender, message })
     }
 
     function showError(message) {
@@ -321,5 +294,5 @@ document.addEventListener('DOMContentLoaded', function() {
             sendChatMessage()
         }
     })
-    
+
 })

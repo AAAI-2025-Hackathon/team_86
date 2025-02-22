@@ -20,6 +20,7 @@ app.add_middleware(
 
 @app.post('/ai/chat')
 async def chat(html: str = Body(..., media_type='text/plain'), model_name: ModelName = DEFAULT_GENAI_MODEL, conv: Conversation = []) -> str:
+    print(conv)
     webpage_text = extract_text_from_html(html)
     category = await website_clf.classify(webpage_text, model, tokenizer)
     return await chatbot(webpage_text, category, model_name, conv)
