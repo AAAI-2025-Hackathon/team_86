@@ -1,91 +1,91 @@
 /* Custom styles to complement TailwindCSS */
 .btn {
-    @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300;
+  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300;
 }
 
 .nav-link {
-    @apply px-3 py-1 rounded hover:bg-blue-600 transition duration-300;
+  @apply px-3 py-1 rounded hover:bg-blue-600 transition duration-300;
 }
 
 .nav-link.active {
-    @apply bg-blue-600;
+  @apply bg-blue-600;
 }
 
 .loading {
-    @apply text-gray-600 italic;
+  @apply text-gray-600 italic;
 }
 
 /* Skeleton loader styles */
 @keyframes skeleton-loading {
-    0% {
-        background-color: #e0e0e0;
-    }
-    25% {
-        background-color: #d1d1d1;
-    }
-    50% {
-        background-color: #c2c2c2;
-    }
-    75% {
-        background-color: #d1d1d1;
-    }
-    100% {
-        background-color: #e0e0e0;
-    }
+  0% {
+      background-color: #e0e0e0;
+  }
+  25% {
+      background-color: #d1d1d1;
+  }
+  50% {
+      background-color: #c2c2c2;
+  }
+  75% {
+      background-color: #d1d1d1;
+  }
+  100% {
+      background-color: #e0e0e0;
+  }
 }
 
 .skeleton {
-    animation: skeleton-loading 2s infinite ease-in-out;
-    @apply bg-gray-200 rounded;
+  animation: skeleton-loading 2s infinite ease-in-out;
+  @apply bg-gray-200 rounded;
 }
 
 /* Resize handle */
 .resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 10px;
-    height: 10px;
-    background-color: #3498db;
-    cursor: nwse-resize;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #3498db;
+  cursor: nwse-resize;
 }
 
 /* Ensure the popup is resizable */
 .popup {
-    resize: both;
-    overflow: auto;
-    min-width: 300px;
-    min-height: 400px;
+  resize: both;
+  overflow: auto;
+  min-width: 300px;
+  min-height: 400px;
 }
 /* Typewriter effect animation */
 @keyframes typing {
-    0% {
-        width: 0;
-    }
-    100% {
-        width: 100%;
-    }
+  0% {
+      width: 0;
+  }
+  100% {
+      width: 100%;
+  }
 }
 
 /* Ensuring the text is clipped initially and animates typing */
 .typewriter {
-    display: inline-block;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 0;
-    animation: typing 3s steps(30) 1s forwards, blink 0.75s step-end infinite;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 3s steps(30) 1s forwards, blink 0.75s step-end infinite;
 }
 
 /* Cursor blink effect */
 @keyframes blink {
-    50% {
-        border-color: transparent;
-    }
+  50% {
+      border-color: transparent;
+  }
 }
 
 .typewriter::after {
-    content: '|'; /* The blinking cursor */
-    animation: blink 0.75s step-end infinite;
-    border-right: 2px solid black;
-    padding-left: 5px;
+  content: '|'; /* The blinking cursor */
+  animation: blink 0.75s step-end infinite;
+  border-right: 2px solid black;
+  padding-left: 5px;
 }
