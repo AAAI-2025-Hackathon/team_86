@@ -1,61 +1,48 @@
-/* Custom styles to complement TailwindCSS */
-.btn {
-  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300;
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars in popup */
 }
 
-.nav-link {
-  @apply px-3 py-1 rounded hover:bg-blue-600 transition duration-300;
+.popup {
+  background-color: #1f2937; /* gray-800 */
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease; /* Smooth transition if needed later */
 }
 
-.nav-link.active {
-  @apply bg-blue-600;
-}
-
-.loading {
-  @apply text-gray-600 italic;
-}
-
-/* Skeleton loader styles */
-@keyframes skeleton-loading {
-  0% {
-      background-color: #e0e0e0;
-  }
-  25% {
-      background-color: #d1d1d1;
-  }
-  50% {
-      background-color: #c2c2c2;
-  }
-  75% {
-      background-color: #d1d1d1;
-  }
-  100% {
-      background-color: #e0e0e0;
-  }
-}
-
-.skeleton {
-  animation: skeleton-loading 2s infinite ease-in-out;
-  @apply bg-gray-200 rounded;
-}
 
 /* Resize handle */
 .resize-handle {
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 10px;
-  height: 10px;
-  background-color: #3498db;
+  width: 16px; /* Adjusted size for better visibility */
+  height: 16px;
   cursor: nwse-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Ensure the popup is resizable */
-.popup {
-  resize: both;
-  overflow: auto;
-  min-width: 300px;
-  min-height: 400px;
+.resize-handle svg {
+  width: 14px;
+  height: 14px;
+  color: #aaa; /* Adjust color as needed */
+}
+
+.hidden {
+  display: none;
+}
+
+.skeleton {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 /* Typewriter effect animation */
 @keyframes typing {
