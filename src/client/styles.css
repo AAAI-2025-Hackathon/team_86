@@ -11,6 +11,25 @@ body {
   transition: all 0.3s ease; /* Smooth transition if needed later */
 }
 
+.nav-link.active {
+  background-color: #2563eb;
+}
+.screen-read-btn {
+  position: absolute;
+  top: -3rem;
+  right: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.screen-read-btn:hover {
+  background-color: #d1d5db;
+}
+.content-container {
+  position: relative;
+}
 
 /* Resize handle */
 .resize-handle {
