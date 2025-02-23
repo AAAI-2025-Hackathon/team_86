@@ -44,6 +44,6 @@ The features below all use the webpage the user is on to provide a relevant resp
     | **Component**        | **Technology**          |
     |----------------------|------------------------|
     | **Backend API**      | FastAPI (Python)        |
-    | **AI Models**        | DeepSeek (1.5B), DeepSeek (8B), Llama 3.1 (8B) |
+    | **AI Models**        | DeepSeek (1.5B), DeepSeek (8B), Llama 3.1 (1.5B), Llama 3.1 (8B), Mistral (7B) |
     | **Evidence Search (Retrieval)** | Wikipedia |
     | **Explainability (XAI)** | Chain-of-Thought (CoT) Reasoning |
