@@ -14,19 +14,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const resizeHandles = document.querySelectorAll('.resize-handle')
     const extractButton = document.getElementById('extract')
     const modelSelect = document.getElementById('model-select')
+    const screenReadButtons = document.querySelectorAll('.screen-read-btn')
 
     const API_BASE_URL = 'http://localhost:8000'
+    const synth = window.speechSynthesis
 
-    // Persistent stats tracking
-    let stats = {
+    // Initialize from localStorage or set defaults
+    let stats = JSON.parse(localStorage.getItem('webAssistantStats')) || {
         pagesAnalyzed: 0,
-        factsChecked: 0
+        factsChecked: 0,
+        summariesGenerated: 0,
+        lastPageUrl: ''
     }
 
-    //Initialise conversationHistory
-    let conversationHistory = []
+    let conversationHistory = JSON.parse(localStorage.getItem('conversationHistory')) || []
 
-    // Navigation with immediate action
+    // Update UI with stored stats
+    document.getElementById('pages-analyzed').textContent = stats.pagesAnalyzed
+    document.getElementById('facts-checked').textContent = stats.factsChecked
+
+    // Navigation handling
     navLinks.forEach(link => {
         link.addEventListener('click', async function(e) {
             e.preventDefault()
@@ -36,50 +43,82 @@ document.addEventListener('DOMContentLoaded', function() {
             pages.forEach(page => page.classList.add('hidden'))
             document.getElementById(targetPage).classList.remove('hidden')
 
-            // Trigger actions based on the selected page
             if (targetPage === 'summary') {
-                await refreshSummary() // Trigger summary immediately
+                await refreshSummary()
             } else if (targetPage === 'factCheck') {
-                await runFactCheck() // Trigger fact check immediately
-            } else if (targetPage === 'chat') {
-                // Optionally send an initial message or just show the chat
-                // For now, we'll keep it as is unless you want an initial AI message
+                await runFactCheck()
             }
         })
     })
-// Resize functionality
-let isResizing = false
-let startX = 0
-let startWidth = 0
 
-resizeHandles.forEach(handle => {
-    handle.addEventListener('mousedown', initResize)
-})
+    // Resize functionality
+    let isResizing = false
+    let startX = 0
+    let startWidth = 0
 
-function initResize(e) {
-    isResizing = true
-    startX = e.clientX
-    startWidth = popup.offsetWidth
-    document.addEventListener('mousemove', resize)
-    document.addEventListener('mouseup', stopResize)
-}
+    resizeHandles.forEach(handle => {
+        handle.addEventListener('mousedown', initResize)
+    })
 
-function resize(e) {
-    if (!isResizing) return
-    const diff = startX - e.clientX  // Reverse the direction here
-    const newWidth = startWidth + diff
-    if (newWidth >= 500 && newWidth <= 900) {
-        popup.style.width = `${newWidth}px`
+    function initResize(e) {
+        isResizing = true
+        startX = e.clientX
+        startWidth = popup.offsetWidth
+        document.addEventListener('mousemove', resize)
+        document.addEventListener('mouseup', stopResize)
     }
-}
 
-function stopResize() {
-    isResizing = false
-    document.removeEventListener('mousemove', resize)
-}
+    function resize(e) {
+        if (!isResizing) return
+        const diff = e.clientX - startX
+        const newWidth = startWidth + diff
+        if (newWidth >= 500 && newWidth <= 900) {
+            popup.style.width = `${newWidth}px`
+        }
+    }
 
+    function stopResize() {
+        isResizing = false
+        document.removeEventListener('mousemove', resize)
+    }
 
-    // Function to extract the body content from the current tab
+    // Screen reading functionality
+    function speakText(text) {
+        synth.cancel()
+        const utterance = new SpeechSynthesisUtterance(text)
+        utterance.rate = 1.0
+        utterance.pitch = 1.0
+        utterance.volume = 1.0
+        synth.speak(utterance)
+    }
+
+    function stopSpeaking() {
+        synth.cancel()
+    }
+
+    screenReadButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const contentId = this.getAttribute('data-content')
+            const contentElement = document.getElementById(contentId)
+            
+            if (this.getAttribute('data-speaking') === 'true') {
+                stopSpeaking()
+                this.setAttribute('data-speaking', 'false')
+                this.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>`
+            } else {
+                const textToRead = contentElement.textContent
+                speakText(textToRead)
+                this.setAttribute('data-speaking', 'true')
+                this.innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z M23 9l-6 6m0-6l6 6" />
+                </svg>`
+            }
+        })
+    })
+
+    // Content extraction
     async function extractBodyContent() {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
         return new Promise((resolve, reject) => {
@@ -98,18 +137,33 @@ function stopResize() {
         })
     }
 
-    // Event listener for the "extract" button
-    extractButton.addEventListener('click', async () => {
-        try {
-            const bodyContent = await extractBodyContent()
-            document.getElementById('content').textContent = bodyContent
-        } catch (error) {
-            console.error('Error:', error)
-            showError('Failed to extract content.')
-        }
-    })
+    // Stats handling
+    function updateStats(newStats) {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            const currentUrl = tabs[0].url
+            const isNewPage = currentUrl !== stats.lastPageUrl
 
-    // Function to handle different API requests with model selection
+            if (newStats) {
+                if (isNewPage && newStats.pagesAnalyzed) {
+                    stats.pagesAnalyzed += 1
+                    stats.lastPageUrl = currentUrl
+                }
+                if (newStats.factsChecked) {
+                    stats.factsChecked += newStats.factsChecked
+                }
+                if (newStats.summariesGenerated) {
+                    stats.summariesGenerated += 1
+                }
+
+                document.getElementById('pages-analyzed').textContent = stats.pagesAnalyzed
+                document.getElementById('facts-checked').textContent = stats.factsChecked
+
+                localStorage.setItem('webAssistantStats', JSON.stringify(stats))
+            }
+        })
+    }
+
+    // API communication
     async function sendToAPI(endpoint, data, modelName, jsonify=false) {
         try {
             const url = new URL(`${API_BASE_URL}${endpoint}`)
@@ -125,12 +179,22 @@ function stopResize() {
             }
             return await response.json()
         } catch (error) {
-            console.error('Error:', error)
-            throw error // Re-throw to handle in calling function
+            console.error('API Error:', error)
+            throw error
         }
     }
 
-    // Event listener for the "analyze" button
+    // Button handlers
+    extractButton.addEventListener('click', async () => {
+        try {
+            const bodyContent = await extractBodyContent()
+            document.getElementById('content').textContent = bodyContent
+        } catch (error) {
+            console.error('Error:', error)
+            showError('Failed to extract content.')
+        }
+    })
+
     analyzeButton.addEventListener('click', async () => {
         try {
             const bodyContent = await extractBodyContent()
@@ -142,7 +206,8 @@ function stopResize() {
                 updateFactCheck(dataFromAPI.factCheck)
                 updateStats({ 
                     pagesAnalyzed: 1,
-                    factsChecked: Array.isArray(dataFromAPI.factCheck) ? dataFromAPI.factCheck.length : 0 
+                    factsChecked: Array.isArray(dataFromAPI.factCheck) ? dataFromAPI.factCheck.length : 0,
+                    summariesGenerated: 1
                 })
             }
         } catch (error) {
@@ -152,7 +217,6 @@ function stopResize() {
         }
     })
 
-    // Function for "refresh summary" (also called on nav click)
     async function refreshSummary() {
         try {
             const bodyContent = await extractBodyContent()
@@ -160,8 +224,8 @@ function stopResize() {
             const dataFromAPI = await sendToAPI('/ai/summarize', bodyContent, selectedModel)
 
             if (dataFromAPI) {
-                updateSummary(markdownToHTML(dataFromAPI));
-                updateStats({ pagesAnalyzed: 1 });
+                updateSummary(markdownToHTML(dataFromAPI))
+                updateStats({ summariesGenerated: 1 })
             }
         } catch (error) {
             console.error('Refresh summary error:', error)
@@ -171,7 +235,6 @@ function stopResize() {
 
     refreshSummaryButton.addEventListener('click', refreshSummary)
 
-    // Function for "run fact check" (also called on nav click)
     async function runFactCheck() {
         try {
             const bodyContent = await extractBodyContent()
@@ -191,44 +254,38 @@ function stopResize() {
     }
 
     runFactCheckButton.addEventListener('click', runFactCheck)
-    
+
     async function sendChatMessage() {
         const message = userInput.value.trim()
         if (!message) return
         appendChatMessage('You', message)
         userInput.value = ''
-        console.log(conversationHistory)
-    
+
         try {
             const selectedModel = modelSelect.value
             const aiMessage = await sendToAPI('/ai/chat', {
                 html: await extractBodyContent(),
                 conv: getCurrentConversation()
             }, selectedModel, true)
-            console.log('aiMessage', aiMessage)
 
             appendChatMessage('AI', aiMessage)
-            // updateConversation(aiMessage)
         } catch (error) {
             console.error('Chat error:', error)
             appendChatMessage('AI', 'Cannot respond due to an error.')
         }
     }
 
-
-
+    // Chat handling
     function updateConversation(message) {
         conversationHistory.push(message)
         localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory))
     }
 
     function getCurrentConversation() {
-        const storedConversation = localStorage.getItem('conversationHistory')
-        return storedConversation ? JSON.parse(storedConversation) : conversationHistory
+        return conversationHistory
     }
 
-
-    // UI Update Functions
+    // UI updates
     function updateSummary(summary) {
         const summaryText = document.getElementById('summary-text')
         summaryText.innerHTML = summary || 'No summary available'
@@ -243,25 +300,20 @@ function stopResize() {
         factCheckContent.innerHTML = ''
 
         if (typeof analysis === 'string') {
-            factCheckContent.innerHTML = markdownToHTML(analysis)
+            // Convert markdown to HTML and update the content
+            factCheckContent.innerHTML = markdownToHTML(analysis);
         } else {
-            factCheckContent.textContent = 'No facts to check'
-            factCheckContent.className = 'text-gray-500'
+            // Clear any existing content and append the error message
+            factCheckContent.innerHTML = '';  // Clear current content
+            const message = document.createElement('p');
+            message.textContent = 'No facts to check';
+            message.className = 'text-red-500';  // Apply the styling
+            factCheckContent.appendChild(message);  // Append the message to the container
         }
-    }
-
-    // Updated updateStats function to accumulate stats
-    function updateStats(newStats) {
-        if (newStats) {
-            stats.pagesAnalyzed += newStats.pagesAnalyzed || 0
-            stats.factsChecked += newStats.factsChecked || 0
-            document.getElementById('pages-analyzed').textContent = stats.pagesAnalyzed
-            document.getElementById('facts-checked').textContent = stats.factsChecked
-        }
+        
     }
 
     function appendChatMessage(sender, message) {
-        console.log({ sender, message })
         const msgElement = document.createElement('div')
         msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100'} rounded-lg mb-2`
         msgElement.innerHTML = ` 
@@ -281,18 +333,15 @@ function stopResize() {
         document.getElementById('content').prepend(errorDiv)
     }
 
-
-    // Utils
     function markdownToHTML(markdown) {
         return DOMPurify.sanitize(marked(markdown))
     }
 
-    // Event Listeners
+    // Event listeners
     sendMessageButton.addEventListener('click', sendChatMessage)
     userInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') {
             sendChatMessage()
         }
     })
-
 })
