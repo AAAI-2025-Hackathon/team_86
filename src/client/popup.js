@@ -258,7 +258,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function sendChatMessage() {
         const message = userInput.value.trim()
         if (!message) return
-        appendChatMessage('You', message)
+        appendChatMessage('You', `<span class="text-black">${message}</span>`);
+
         userInput.value = ''
 
         try {
@@ -311,20 +312,27 @@ document.addEventListener('DOMContentLoaded', function() {
             factCheckContent.appendChild(message);  // Append the message to the container
         }
         
-    }
-
-    function appendChatMessage(sender, message) {
-        const msgElement = document.createElement('div')
-        msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100'} rounded-lg mb-2`
+    }function appendChatMessage(sender, message) {
+        const msgElement = document.createElement('div');
+        
+        // Set background color based on sender
+        const backgroundColorClass = sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100';
+        
+        // Set message styles and content
+        msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${backgroundColorClass} rounded-lg mb-2`;
+    
         msgElement.innerHTML = ` 
             <div class="font-semibold text-gray-700">${sender}:</div>
-            <div class="${message.startsWith('Cannot') ? 'text-red-500' : ''}">${markdownToHTML(message)}</div>
-        `
-        chatMessages.appendChild(msgElement)
-        chatMessages.scrollTop = chatMessages.scrollHeight
-        updateConversation({ sender, message })
+            <div class="${message.startsWith('Cannot') ? 'text-red-500' : 'text-gray-900'}">${markdownToHTML(message)}</div>
+        `;
+        
+        chatMessages.appendChild(msgElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Update conversation
+        updateConversation({ sender, message });
     }
-
+    
     function showError(message) {
         console.error(message)
         const errorDiv = document.createElement('div')
