@@ -95,3 +95,16 @@ body {
   border-right: 2px solid black;
   padding-left: 5px;
 }
+
+.ai-message div, #summary-text, #fact-check-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.ai-message, .you-message div, .you-message span {
+  font-size: 1.1rem;
+  color: white;
+}

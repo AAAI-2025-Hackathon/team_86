@@ -312,11 +312,13 @@ document.addEventListener('DOMContentLoaded', function() {
             factCheckContent.appendChild(message);  // Append the message to the container
         }
         
-    }function appendChatMessage(sender, message) {
+    }
+    
+    function appendChatMessage(sender, message) {
         const msgElement = document.createElement('div');
         
         // Set background color based on sender
-        const backgroundColorClass = sender === 'AI' ? 'bg-gray-200' : 'bg-blue-100';
+        const backgroundColorClass = sender === 'AI' ? 'bg-gray-600' : 'bg-blue-600';
         
         // Set message styles and content
         msgElement.className = `message ${sender.toLowerCase()}-message p-2 ${backgroundColorClass} rounded-lg mb-2`;

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cd dist && mv index.html popup.html",
+    "build": "vite build && cd dist",
     "preview": "vite preview"
   },
   "devDependencies": {
