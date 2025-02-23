@@ -103,6 +103,4 @@ async def fact_check(webpage_text: str, category: WebsiteCategory, model_name: M
     # Step 2: Retrieve Wikipedia evidence
     claim_evidence = await _search_for_evidence(claims)
     # Step 3: Perform fact-checking using CoT reasoning
-    res = await _fact_check_with_CoT(claim_evidence, category, model_name)
-    print('res:', res)
-    return res
+    return await _fact_check_with_CoT(claim_evidence, category, model_name)
