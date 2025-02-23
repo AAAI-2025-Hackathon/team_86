@@ -47,37 +47,37 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
     })
+// Resize functionality
+let isResizing = false
+let startX = 0
+let startWidth = 0
 
-    // Resize functionality
-    let isResizing = false
-    let startX = 0
-    let startWidth = 0
+resizeHandles.forEach(handle => {
+    handle.addEventListener('mousedown', initResize)
+})
 
-    resizeHandles.forEach(handle => {
-        handle.addEventListener('mousedown', initResize)
-    })
+function initResize(e) {
+    isResizing = true
+    startX = e.clientX
+    startWidth = popup.offsetWidth
+    document.addEventListener('mousemove', resize)
+    document.addEventListener('mouseup', stopResize)
+}
 
-    function initResize(e) {
-        isResizing = true
-        startX = e.clientX
-        startWidth = popup.offsetWidth
-        document.addEventListener('mousemove', resize)
-        document.addEventListener('mouseup', stopResize)
+function resize(e) {
+    if (!isResizing) return
+    const diff = startX - e.clientX  // Reverse the direction here
+    const newWidth = startWidth + diff
+    if (newWidth >= 500 && newWidth <= 900) {
+        popup.style.width = `${newWidth}px`
     }
+}
 
-    function resize(e) {
-        if (!isResizing) return
-        const diff = e.clientX - startX
-        const newWidth = startWidth + diff
-        if (newWidth >= 500 && newWidth <= 900) {
-            popup.style.width = `${newWidth}px`
-        }
-    }
+function stopResize() {
+    isResizing = false
+    document.removeEventListener('mousemove', resize)
+}
 
-    function stopResize() {
-        isResizing = false
-        document.removeEventListener('mousemove', resize)
-    }
 
     // Function to extract the body content from the current tab
     async function extractBodyContent() {
