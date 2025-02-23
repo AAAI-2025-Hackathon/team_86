@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function resize(e) {
         if (!isResizing) return
-        const diff = e.clientX - startX
+        const diff = startX - e.clientX 
         const newWidth = startWidth + diff
         if (newWidth >= 500 && newWidth <= 900) {
             popup.style.width = `${newWidth}px`
